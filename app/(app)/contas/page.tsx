@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { getPerfil } from '@/lib/auth'
 import { getRitmoBadge, pctDiasUteisDecorridos } from '@/lib/metas'
 import ContaCard from '@/components/contas/ContaCard'
@@ -26,10 +27,14 @@ export default async function ContasPage() {
 
   const representantes: { id: string; nome: string }[] = []
   if (perfil.papel === 'gerente') {
-    const { data: reps } = await supabase
+    const supabaseAdmin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const { data: reps } = await supabaseAdmin
       .from('crm_perfis')
       .select('id, nome')
-      .eq('papel', 'representante')
+      .in('papel', ['representante', 'gerente'])
       .order('nome')
     representantes.push(...(reps ?? []))
   }
