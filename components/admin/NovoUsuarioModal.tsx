@@ -31,9 +31,14 @@ export default function NovoUsuarioModal({ parceiros, onClose, onSuccess }: Prop
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      const data = await res.json()
-      if (!res.ok) { setErro(data.error || 'Erro ao criar usuário'); return }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setErro(data.error || `Erro ao criar usuário (${res.status})`)
+        return
+      }
       onSuccess()
+    } catch {
+      setErro('Erro de conexão. Tente novamente.')
     } finally {
       setSalvando(false)
     }

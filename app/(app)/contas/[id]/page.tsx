@@ -7,7 +7,6 @@ import ReunioesList from '@/components/ficha/ReunioesList'
 import TarefasList from '@/components/ficha/TarefasList'
 import ArquivosList from '@/components/ficha/ArquivosList'
 import Tabs from '@/components/ui/Tabs'
-import ScrollReveal from '@/components/animations/ScrollReveal'
 
 const TABS = [
   { id: 'reunioes', label: 'Reuniões' },
@@ -57,18 +56,16 @@ export default async function FichaPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="flex flex-col h-full">
-      <ScrollReveal direction="up" duration={400} distance="16px">
-        <FichaHeader
-          nome={parceiro.nome}
-          tipo={parceiro.tipo}
-          representante={(parceiro.representante as any)?.nome ?? ''}
-          metaMensal={metaMensal}
-          realizadoMensal={realizadoMensal}
-          metaTrimestral={(trimestralData as any)?.meta_valor ?? 0}
-          realizadoTrimestral={(trimestralData as any)?.realizado_valor ?? 0}
-          ritmo={ritmo}
-        />
-      </ScrollReveal>
+      <FichaHeader
+        nome={parceiro.nome}
+        tipo={parceiro.tipo}
+        representante={(parceiro.representante as any)?.nome ?? ''}
+        metaMensal={metaMensal}
+        realizadoMensal={realizadoMensal}
+        metaTrimestral={(trimestralData as any)?.meta_valor ?? 0}
+        realizadoTrimestral={(trimestralData as any)?.realizado_valor ?? 0}
+        ritmo={ritmo}
+      />
       <Tabs tabs={TABS}>
         {(activeId) => (
           <>

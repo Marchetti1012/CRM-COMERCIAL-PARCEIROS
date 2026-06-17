@@ -3,7 +3,6 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { getPerfil } from '@/lib/auth'
 import { getRitmoBadge, pctDiasUteisDecorridos } from '@/lib/metas'
 import ContaCard from '@/components/contas/ContaCard'
-import ScrollReveal from '@/components/animations/ScrollReveal'
 import NovaContaButton from '@/components/admin/NovaContaButton'
 
 export default async function ContasPage() {
@@ -99,20 +98,16 @@ export default async function ContasPage() {
         {emAtencao.length > 0 && (
           <>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Em Atenção</p>
-            {emAtencao.map((c: any, i: number) => (
-              <ScrollReveal key={c.id} direction="up" duration={400} distance="16px" delay={i * 80}>
-                <ContaCard {...c} />
-              </ScrollReveal>
+            {emAtencao.map((c: any) => (
+              <ContaCard key={c.id} {...c} />
             ))}
           </>
         )}
         {noRitmo.length > 0 && (
           <>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mt-2">No Ritmo</p>
-            {noRitmo.map((c: any, i: number) => (
-              <ScrollReveal key={c.id} direction="up" duration={400} distance="16px" delay={i * 80}>
-                <ContaCard {...c} />
-              </ScrollReveal>
+            {noRitmo.map((c: any) => (
+              <ContaCard key={c.id} {...c} />
             ))}
           </>
         )}

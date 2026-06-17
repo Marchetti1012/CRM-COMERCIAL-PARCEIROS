@@ -1,14 +1,16 @@
-// app/(app)/painel/page.tsx
 import { requirePapel } from '@/lib/auth'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import { getRitmoBadge, pctDiasUteisDecorridos } from '@/lib/metas'
 import KpiCard from '@/components/painel/KpiCard'
 import TabelaDesempenho from '@/components/painel/TabelaDesempenho'
-import ScrollReveal from '@/components/animations/ScrollReveal'
 
 export default async function PainelPage() {
   await requirePapel(['gerente'])
-  const supabase = await createClient()
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   const hoje = new Date()
   const ano = hoje.getFullYear()
@@ -16,7 +18,7 @@ export default async function PainelPage() {
 
   const [{ data: feriados }, { data: mensais }, { data: reps }, { data: tarefasVencidas }] = await Promise.all([
     supabase.from('crm_feriados').select('data'),
-    supabase.from('crm_metas_mensais').select('parceiro_id, meta_valor, realizado_valor, parceiro:crm_parceiros(representante_id, representante:crm_perfis(nome))').eq('ano', ano).eq('mes', mes),
+    supabase.from('crm_metas_mensais').select('parceiro_id, meta_valor, realizado_valor, parceiro:crm_parceiros(representante_id)').eq('ano', ano).eq('mes', mes),
     supabase.from('crm_perfis').select('id, nome').eq('papel', 'representante'),
     supabase.from('crm_tarefas').select('id').eq('concluida', false).lt('prazo', hoje.toISOString().split('T')[0]),
   ])
@@ -48,15 +50,13 @@ export default async function PainelPage() {
             { label: 'Realizado Mês', valor: totalRealizado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }) },
             { label: 'Tarefas Vencidas', valor: String((tarefasVencidas ?? []).length), cor: (tarefasVencidas ?? []).length > 0 ? 'text-red-600' : 'text-gray-900' },
           ].map((kpi, i) => (
-            <ScrollReveal key={i} direction="up" duration={700} delay={i * 150}>
-              <KpiCard {...kpi} />
-            </ScrollReveal>
+            <KpiCard key={i} {...kpi} />
           ))}
         </div>
-        <ScrollReveal direction="up" duration={700} delay={400}>
+        <div>
           <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Desempenho por Representante</h2>
           <TabelaDesempenho linhas={linhas} />
-        </ScrollReveal>
+        </div>
       </div>
     </div>
   )
