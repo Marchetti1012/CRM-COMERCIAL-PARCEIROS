@@ -3,14 +3,13 @@ import { getPerfil } from '@/lib/auth'
 import { getRitmoBadge, pctDiasUteisDecorridos } from '@/lib/metas'
 import ContaCard from '@/components/contas/ContaCard'
 import ScrollReveal from '@/components/animations/ScrollReveal'
+import NovaContaButton from '@/components/admin/NovaContaButton'
 
 export default async function ContasPage() {
   const supabase = await createClient()
-  await getPerfil()
+  const perfil = await getPerfil()
 
-  const { data: feriados } = await supabase
-    .from('crm_feriados')
-    .select('data')
+  const { data: feriados } = await supabase.from('crm_feriados').select('data')
   const listaFeriados = (feriados ?? []).map((f: { data: string }) => f.data)
   const pctDias = pctDiasUteisDecorridos(listaFeriados)
 
@@ -25,11 +24,26 @@ export default async function ContasPage() {
     .eq('ativo', true)
     .order('nome')
 
+  const representantes: { id: string; nome: string }[] = []
+  if (perfil.papel === 'gerente') {
+    const { data: reps } = await supabase
+      .from('crm_perfis')
+      .select('id, nome')
+      .eq('papel', 'representante')
+      .order('nome')
+    representantes.push(...(reps ?? []))
+  }
+
   if (!parceiros || parceiros.length === 0) {
     return (
-      <div className="p-6">
-        <h1 className="text-lg font-bold text-gray-900">Minhas Contas</h1>
-        <p className="text-sm text-gray-500 mt-4">Nenhuma conta encontrada.</p>
+      <div className="flex flex-col h-full">
+        <div className="bg-white border-b border-gray-200 px-5 h-[52px] flex items-center justify-between flex-shrink-0">
+          <span className="text-[15px] font-bold text-gray-900">Minhas Contas</span>
+          {perfil.papel === 'gerente' && <NovaContaButton representantes={representantes} />}
+        </div>
+        <div className="p-6">
+          <p className="text-sm text-gray-500">Nenhuma conta encontrada.</p>
+        </div>
       </div>
     )
   }
@@ -73,6 +87,7 @@ export default async function ContasPage() {
             {contas.length} contas · {hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
           </span>
         </div>
+        {perfil.papel === 'gerente' && <NovaContaButton representantes={representantes} />}
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 pb-32 flex flex-col gap-3">

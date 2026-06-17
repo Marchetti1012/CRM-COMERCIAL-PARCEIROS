@@ -14,6 +14,7 @@ const NAV_ITEMS: Record<Papel, { href: string; label: string }[]> = {
     { href: '/contas', label: 'Minhas Contas' },
     { href: '/kanban', label: 'Kanban' },
     { href: '/painel', label: 'Painel Geral' },
+    { href: '/usuarios', label: 'Usuários' },
     { href: '/importar', label: 'Importar Planilha' },
   ],
   parceiro: [
