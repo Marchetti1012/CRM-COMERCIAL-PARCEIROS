@@ -9,12 +9,10 @@ const NAV_ITEMS: Record<Papel, { href: string; label: string }[]> = {
   representante: [
     { href: '/contas', label: 'Minhas Contas' },
     { href: '/kanban', label: 'Kanban' },
-    { href: '/tarefas', label: 'Tarefas' },
   ],
   gerente: [
     { href: '/contas', label: 'Minhas Contas' },
     { href: '/kanban', label: 'Kanban' },
-    { href: '/tarefas', label: 'Tarefas' },
     { href: '/painel', label: 'Painel Geral' },
     { href: '/importar', label: 'Importar Planilha' },
   ],
