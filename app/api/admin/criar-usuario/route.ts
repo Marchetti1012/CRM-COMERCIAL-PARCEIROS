@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    console.log('[criar-usuario] url present:', !!supabaseUrl, '| key present:', !!serviceRoleKey, '| key length:', serviceRoleKey?.length)
+    console.log('[criar-usuario] url present:', !!supabaseUrl, '| key present:', !!serviceRoleKey)
 
     if (!supabaseUrl || !serviceRoleKey) {
       console.error('[criar-usuario] env vars ausentes')
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       auth: { autoRefreshToken: false, persistSession: false },
     })
 
-    console.log('[criar-usuario] chamando auth.admin.createUser para:', email.trim())
+    console.log('[criar-usuario] chamando auth.admin.createUser')
 
     const { data: novoUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email.trim(),
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       email_confirm: true,
     })
 
-    console.log('[criar-usuario] resultado createUser — erro:', authError?.message ?? 'nenhum', '| user id:', novoUser?.user?.id ?? 'nulo')
+    console.log('[criar-usuario] resultado createUser — erro:', authError?.message ?? 'nenhum', '| user criado:', !!novoUser?.user)
 
     if (authError) {
       console.error('[criar-usuario] authError completo:', JSON.stringify(authError))
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, userId: novoUser.user.id })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error('[criar-usuario] exceção não tratada:', msg, err)
-    return NextResponse.json({ error: `Erro interno: ${msg}` }, { status: 500 })
+    console.error('[criar-usuario] exceção não tratada:', msg)
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
