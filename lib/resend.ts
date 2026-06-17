@@ -1,8 +1,6 @@
 // lib/resend.ts
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 interface AlertaParams {
   destinatario: string
   nomeTarefa: string
@@ -12,6 +10,7 @@ interface AlertaParams {
 }
 
 export async function enviarAlertaPrazo(params: AlertaParams) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const { destinatario, nomeTarefa, nomeParceiro, prazo, tipo } = params
   const assunto = tipo === 'prazo_vencido'
     ? `⚠️ Tarefa vencida: ${nomeTarefa}`
