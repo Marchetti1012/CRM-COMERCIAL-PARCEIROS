@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       .from('crm_parceiros')
       .select('id')
       .eq('id', parceiro_id)
-      .single()
+      .maybeSingle()
 
     if (!parceiroAcesso) {
       return NextResponse.json({ error: 'Acesso negado a este parceiro' }, { status: 403 })
