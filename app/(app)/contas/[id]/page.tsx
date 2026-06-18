@@ -77,7 +77,7 @@ export default async function FichaPage({ params }: { params: Promise<{ id: stri
         ritmo={ritmo}
       />
       <Tabs tabs={TABS} panels={{
-        reunioes: <ReunioesList reunioes={reunioes ?? []} />,
+        reunioes: <ReunioesList reunioes={reunioes ?? []} parceiroId={id} podeRegistrar={podeUpload} />,
         tarefas: <TarefasList tarefas={tarefas ?? []} />,
         arquivos: <ArquivosList arquivos={arquivos ?? []} parceiroId={id} podeUpload={podeUpload} />,
       }} />

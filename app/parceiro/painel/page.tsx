@@ -64,7 +64,7 @@ export default async function PainelParceiroPage() {
       />
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <Tabs tabs={TABS} panels={{
-          reunioes: <ReunioesList reunioes={reunioes ?? []} />,
+          reunioes: <ReunioesList reunioes={reunioes ?? []} parceiroId={parceiroId} podeRegistrar={false} />,
           tarefas: <TarefasList tarefas={tarefas ?? []} />,
           arquivos: <ArquivosList arquivos={arquivos ?? []} parceiroId={parceiroId} podeUpload={false} />,
         }} />
