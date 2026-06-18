@@ -57,21 +57,48 @@ export async function POST(req: NextRequest) {
     })
 
     const authData = await authRes.json().catch(() => ({}))
-    console.log('[criar-usuario] auth status:', authRes.status, '| body:', JSON.stringify(authData))
-
-    if (!authRes.ok) {
-      const errMsg = authData?.msg || authData?.message || authData?.error_description || authData?.error || `HTTP ${authRes.status}`
-      return NextResponse.json({ error: `Erro ao criar usuário: ${errMsg}` }, { status: 500 })
-    }
-
-    const userId: string = authData.id
-    if (!userId) {
-      return NextResponse.json({ error: 'Auth retornou OK mas sem ID de usuário' }, { status: 500 })
-    }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     })
+
+    let userId: string
+
+    if (authRes.ok) {
+      userId = authData.id
+      if (!userId) {
+        return NextResponse.json({ error: 'Auth retornou OK mas sem ID de usuário' }, { status: 500 })
+      }
+    } else {
+      const errMsg: string = authData?.msg || authData?.message || authData?.error_description || authData?.error || `HTTP ${authRes.status}`
+      const isAlreadyRegistered = errMsg.toLowerCase().includes('already')
+
+      if (!isAlreadyRegistered) {
+        return NextResponse.json({ error: `Erro ao criar usuário: ${errMsg}` }, { status: 500 })
+      }
+
+      // Email já existe no Auth — busca o usuário para verificar se tem perfil
+      const { data: usersPage } = await supabaseAdmin.auth.admin.listUsers()
+      const existingAuthUser = usersPage?.users?.find((u: { email?: string }) => u.email === email.trim())
+
+      if (!existingAuthUser) {
+        return NextResponse.json({ error: 'E-mail já registrado no sistema de autenticação' }, { status: 409 })
+      }
+
+      // Verifica se já tem perfil válido no CRM
+      const { data: existingPerfil } = await supabaseAdmin
+        .from('crm_perfis')
+        .select('id')
+        .eq('id', existingAuthUser.id)
+        .single()
+
+      if (existingPerfil) {
+        return NextResponse.json({ error: 'Este e-mail já está cadastrado no sistema' }, { status: 409 })
+      }
+
+      // Usuário órfão (existe no Auth mas sem perfil) — aproveita o ID existente
+      userId = existingAuthUser.id
+    }
 
     // Upsert garante que o perfil exista mesmo se o trigger falhou silenciosamente
     const upsertData: Record<string, unknown> = {
