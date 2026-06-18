@@ -20,7 +20,7 @@ export default async function UsuariosPage() {
   const [{ data: usuarios }, { data: parceiros }] = await Promise.all([
     supabaseAdmin
       .from('crm_perfis')
-      .select('id, nome, email, papel, parceiro:crm_parceiros(nome)')
+      .select('id, nome, email, papel, parceiro_id')
       .order('nome'),
     supabaseAdmin
       .from('crm_parceiros')
@@ -70,7 +70,9 @@ export default async function UsuariosPage() {
                         {PAPEL_LABEL[u.papel] ?? u.papel}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{(u.parceiro as any)?.nome ?? '—'}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {parceiros?.find((p: any) => p.id === u.parceiro_id)?.nome ?? '—'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
