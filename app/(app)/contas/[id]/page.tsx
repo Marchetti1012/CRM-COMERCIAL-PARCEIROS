@@ -76,21 +76,11 @@ export default async function FichaPage({ params }: { params: Promise<{ id: stri
         realizadoTrimestral={(trimestralData as any)?.realizado_valor ?? 0}
         ritmo={ritmo}
       />
-      <Tabs tabs={TABS}>
-        {(activeId) => (
-          <>
-            {activeId === 'reunioes' && <ReunioesList reunioes={reunioes ?? []} />}
-            {activeId === 'tarefas' && <TarefasList tarefas={tarefas ?? []} />}
-            {activeId === 'arquivos' && (
-              <ArquivosList
-                arquivos={arquivos ?? []}
-                parceiroId={id}
-                podeUpload={podeUpload}
-              />
-            )}
-          </>
-        )}
-      </Tabs>
+      <Tabs tabs={TABS} panels={{
+        reunioes: <ReunioesList reunioes={reunioes ?? []} />,
+        tarefas: <TarefasList tarefas={tarefas ?? []} />,
+        arquivos: <ArquivosList arquivos={arquivos ?? []} parceiroId={id} podeUpload={podeUpload} />,
+      }} />
     </div>
   )
 }

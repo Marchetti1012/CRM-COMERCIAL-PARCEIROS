@@ -4,10 +4,10 @@ import { useState } from 'react'
 interface Tab { id: string; label: string }
 interface TabsProps {
   tabs: Tab[]
-  children: (activeId: string) => React.ReactNode
+  panels: Record<string, React.ReactNode>
 }
 
-export default function Tabs({ tabs, children }: TabsProps) {
+export default function Tabs({ tabs, panels }: TabsProps) {
   const [active, setActive] = useState(tabs[0].id)
   return (
     <div className="flex flex-col flex-1">
@@ -26,7 +26,7 @@ export default function Tabs({ tabs, children }: TabsProps) {
           </button>
         ))}
       </div>
-      <div className="flex-1 overflow-y-auto">{children(active)}</div>
+      <div className="flex-1 overflow-y-auto">{panels[active]}</div>
     </div>
   )
 }
