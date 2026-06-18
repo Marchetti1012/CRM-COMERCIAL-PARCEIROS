@@ -40,30 +40,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Configuração do servidor incompleta' }, { status: 500 })
     }
 
+    // Chama a Auth Admin API diretamente para ter visibilidade completa do erro
+    const authRes = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${serviceRoleKey}`,
+        'apikey': serviceRoleKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email.trim(),
+        password: senha,
+        user_metadata: { nome: nome.trim() },
+        email_confirm: true,
+      }),
+    })
+
+    const authData = await authRes.json().catch(() => ({}))
+    console.log('[criar-usuario] auth status:', authRes.status, '| body:', JSON.stringify(authData))
+
+    if (!authRes.ok) {
+      const errMsg = authData?.msg || authData?.message || authData?.error_description || authData?.error || `HTTP ${authRes.status}`
+      return NextResponse.json({ error: `Erro ao criar usuário: ${errMsg}` }, { status: 500 })
+    }
+
+    const userId: string = authData.id
+    if (!userId) {
+      return NextResponse.json({ error: 'Auth retornou OK mas sem ID de usuário' }, { status: 500 })
+    }
+
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     })
-
-    console.log('[criar-usuario] chamando auth.admin.createUser')
-
-    const { data: novoUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: email.trim(),
-      password: senha,
-      user_metadata: { nome: nome.trim() },
-      email_confirm: true,
-    })
-
-    console.log('[criar-usuario] resultado createUser — erro:', authError?.message ?? 'nenhum', '| user criado:', !!novoUser?.user)
-
-    if (authError) {
-      console.error('[criar-usuario] authError completo:', JSON.stringify(authError))
-      return NextResponse.json({ error: authError.message }, { status: 500 })
-    }
-
-    if (!novoUser?.user?.id) {
-      console.error('[criar-usuario] createUser sem erro mas user é nulo')
-      return NextResponse.json({ error: 'Usuário criado mas sem ID retornado' }, { status: 500 })
-    }
 
     const updates: Record<string, unknown> = { papel, nome: nome.trim() }
     if (papel === 'parceiro' && parceiro_id) updates.parceiro_id = parceiro_id
@@ -71,14 +79,14 @@ export async function POST(req: NextRequest) {
     const { error: updateError } = await supabaseAdmin
       .from('crm_perfis')
       .update(updates)
-      .eq('id', novoUser.user.id)
+      .eq('id', userId)
 
     if (updateError) {
       console.error('[criar-usuario] updateError:', updateError.message)
       return NextResponse.json({ error: updateError.message }, { status: 500 })
     }
 
-    return NextResponse.json({ ok: true, userId: novoUser.user.id })
+    return NextResponse.json({ ok: true, userId })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error('[criar-usuario] exceção não tratada:', msg)
