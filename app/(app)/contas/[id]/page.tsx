@@ -21,11 +21,21 @@ export default async function FichaPage({ params }: { params: Promise<{ id: stri
 
   const { data: parceiro } = await supabase
     .from('crm_parceiros')
-    .select('*, representante:crm_perfis(nome)')
+    .select('*')
     .eq('id', id)
     .single()
 
   if (!parceiro) notFound()
+
+  let representanteNome = ''
+  if (parceiro.representante_id) {
+    const { data: rep } = await supabase
+      .from('crm_perfis')
+      .select('nome')
+      .eq('id', parceiro.representante_id)
+      .single()
+    representanteNome = rep?.nome ?? ''
+  }
 
   const hoje = new Date()
   const ano = hoje.getFullYear()
@@ -59,7 +69,7 @@ export default async function FichaPage({ params }: { params: Promise<{ id: stri
       <FichaHeader
         nome={parceiro.nome}
         tipo={parceiro.tipo}
-        representante={(parceiro.representante as any)?.nome ?? ''}
+        representante={representanteNome}
         metaMensal={metaMensal}
         realizadoMensal={realizadoMensal}
         metaTrimestral={(trimestralData as any)?.meta_valor ?? 0}
