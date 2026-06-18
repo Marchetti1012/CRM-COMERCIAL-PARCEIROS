@@ -25,6 +25,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Parceiro, título, data e resumo são obrigatórios' }, { status: 400 })
     }
 
+    // Verifica acesso ao parceiro via cliente com RLS (impede IDOR)
+    const { data: parceiroAcesso } = await supabase
+      .from('crm_parceiros')
+      .select('id')
+      .eq('id', parceiro_id)
+      .single()
+
+    if (!parceiroAcesso) {
+      return NextResponse.json({ error: 'Acesso negado a este parceiro' }, { status: 403 })
+    }
+
     const supabaseAdmin = createAdmin(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
