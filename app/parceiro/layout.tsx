@@ -1,4 +1,5 @@
-// app/(parceiro)/layout.tsx
+export const dynamic = 'force-dynamic'
+
 import { getPerfil } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Image from 'next/image'

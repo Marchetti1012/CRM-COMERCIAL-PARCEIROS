@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getPerfil } from '@/lib/auth'
 import Sidebar from '@/components/layout/Sidebar'
 

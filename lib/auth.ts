@@ -1,15 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { cache } from 'react'
 import type { Papel } from '@/lib/supabase/types'
 
-export async function getUser() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-  return user
-}
-
-export async function getPerfil() {
+// cache() deduplica: layout + página chamam getPerfil mas só executa 1x por request
+export const getPerfil = cache(async () => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -22,6 +17,11 @@ export async function getPerfil() {
 
   if (!perfil) redirect('/login')
   return perfil
+})
+
+export async function getUser() {
+  const perfil = await getPerfil()
+  return { id: perfil.id, email: perfil.email }
 }
 
 export async function requirePapel(papeis: Papel[]) {
