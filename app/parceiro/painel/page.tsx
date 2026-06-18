@@ -1,4 +1,3 @@
-// app/(parceiro)/painel/page.tsx
 import { getPerfil } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { getRitmoBadge, pctDiasUteisDecorridos } from '@/lib/metas'
@@ -7,7 +6,6 @@ import ReunioesList from '@/components/ficha/ReunioesList'
 import TarefasList from '@/components/ficha/TarefasList'
 import ArquivosList from '@/components/ficha/ArquivosList'
 import Tabs from '@/components/ui/Tabs'
-import ScrollReveal from '@/components/animations/ScrollReveal'
 
 const TABS = [
   { id: 'reunioes', label: 'Reuniões' },
@@ -54,34 +52,22 @@ export default async function PainelParceiroPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <ScrollReveal direction="up" duration={700}>
-        <FichaHeader
-          nome={parceiro?.nome ?? ''}
-          tipo={parceiro?.tipo ?? ''}
-          representante=""
-          metaMensal={metaMensal}
-          realizadoMensal={realizadoMensal}
-          metaTrimestral={(trimestralData as any)?.meta_valor ?? 0}
-          realizadoTrimestral={(trimestralData as any)?.realizado_valor ?? 0}
-          ritmo={ritmo}
-        />
-      </ScrollReveal>
+      <FichaHeader
+        nome={parceiro?.nome ?? ''}
+        tipo={parceiro?.tipo ?? ''}
+        representante=""
+        metaMensal={metaMensal}
+        realizadoMensal={realizadoMensal}
+        metaTrimestral={(trimestralData as any)?.meta_valor ?? 0}
+        realizadoTrimestral={(trimestralData as any)?.realizado_valor ?? 0}
+        ritmo={ritmo}
+      />
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <Tabs tabs={TABS}>
-          {(activeId) => (
-            <>
-              {activeId === 'reunioes' && <ReunioesList reunioes={reunioes ?? []} />}
-              {activeId === 'tarefas' && <TarefasList tarefas={tarefas ?? []} />}
-              {activeId === 'arquivos' && (
-                <ArquivosList
-                  arquivos={arquivos ?? []}
-                  parceiroId={parceiroId}
-                  podeUpload={false}
-                />
-              )}
-            </>
-          )}
-        </Tabs>
+        <Tabs tabs={TABS} panels={{
+          reunioes: <ReunioesList reunioes={reunioes ?? []} />,
+          tarefas: <TarefasList tarefas={tarefas ?? []} />,
+          arquivos: <ArquivosList arquivos={arquivos ?? []} parceiroId={parceiroId} podeUpload={false} />,
+        }} />
       </div>
     </div>
   )

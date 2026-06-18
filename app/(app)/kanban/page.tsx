@@ -7,26 +7,25 @@ export default async function KanbanPage() {
   await requirePapel(['gerente', 'representante'])
   const supabase = await createClient()
 
-  const { data: rows } = await supabase
-    .from('crm_negociacoes')
-    .select('*, parceiro:crm_parceiros(nome)')
-    .order('ordem')
+  const [{ data: rows }, { data: parceiros }] = await Promise.all([
+    supabase.from('crm_negociacoes').select('*').order('ordem'),
+    supabase.from('crm_parceiros').select('id, nome').eq('ativo', true),
+  ])
 
-  const items: (Negociacao & { parceiro_nome: string })[] = (rows ?? []).map(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const items: (Negociacao & { parceiro_nome: string })[] = (rows ?? []).map((n: any) => ({
+    id: n.id,
+    parceiro_id: n.parceiro_id,
+    titulo: n.titulo,
+    descricao: n.descricao,
+    status: n.status,
+    valor_estimado: n.valor_estimado,
+    ordem: n.ordem,
+    criado_em: n.criado_em,
+    atualizado_em: n.atualizado_em,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (n: any) => ({
-      id: n.id,
-      parceiro_id: n.parceiro_id,
-      titulo: n.titulo,
-      descricao: n.descricao,
-      status: n.status,
-      valor_estimado: n.valor_estimado,
-      ordem: n.ordem,
-      criado_em: n.criado_em,
-      atualizado_em: n.atualizado_em,
-      parceiro_nome: n.parceiro?.nome ?? '',
-    })
-  )
+    parceiro_nome: (parceiros ?? []).find((p: any) => p.id === n.parceiro_id)?.nome ?? '',
+  }))
 
   return (
     <div className="flex flex-col h-full">

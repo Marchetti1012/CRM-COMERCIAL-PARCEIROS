@@ -16,9 +16,10 @@ export default async function PainelPage() {
   const ano = hoje.getFullYear()
   const mes = hoje.getMonth() + 1
 
-  const [{ data: feriados }, { data: mensais }, { data: reps }, { data: tarefasVencidas }] = await Promise.all([
+  const [{ data: feriados }, { data: mensais }, { data: parceiros }, { data: reps }, { data: tarefasVencidas }] = await Promise.all([
     supabase.from('crm_feriados').select('data'),
-    supabase.from('crm_metas_mensais').select('parceiro_id, meta_valor, realizado_valor, parceiro:crm_parceiros(representante_id)').eq('ano', ano).eq('mes', mes),
+    supabase.from('crm_metas_mensais').select('parceiro_id, meta_valor, realizado_valor').eq('ano', ano).eq('mes', mes),
+    supabase.from('crm_parceiros').select('id, representante_id').eq('ativo', true),
     supabase.from('crm_perfis').select('id, nome').eq('papel', 'representante'),
     supabase.from('crm_tarefas').select('id').eq('concluida', false).lt('prazo', hoje.toISOString().split('T')[0]),
   ])
@@ -30,7 +31,10 @@ export default async function PainelPage() {
   const pctGeral = totalMeta > 0 ? ((totalRealizado / totalMeta) * 100).toFixed(0) + '%' : '—'
 
   const linhas = (reps ?? []).map(rep => {
-    const minhas = (mensais ?? []).filter((m: any) => (m.parceiro as any)?.representante_id === rep.id)
+    const minhas = (mensais ?? []).filter((m: any) => {
+      const parc = (parceiros ?? []).find((p: any) => p.id === m.parceiro_id)
+      return parc?.representante_id === rep.id
+    })
     const realizado = minhas.reduce((s, m) => s + (m.realizado_valor ?? 0), 0)
     const meta = minhas.reduce((s, m) => s + (m.meta_valor ?? 0), 0)
     const ritmo = getRitmoBadge({ meta, realizado, pctDiasUteis: pctDias })
