@@ -73,17 +73,22 @@ export async function POST(req: NextRequest) {
       auth: { autoRefreshToken: false, persistSession: false },
     })
 
-    const updates: Record<string, unknown> = { papel, nome: nome.trim() }
-    if (papel === 'parceiro' && parceiro_id) updates.parceiro_id = parceiro_id
+    // Upsert garante que o perfil exista mesmo se o trigger falhou silenciosamente
+    const upsertData: Record<string, unknown> = {
+      id: userId,
+      email: email.trim(),
+      nome: nome.trim(),
+      papel,
+    }
+    if (papel === 'parceiro' && parceiro_id) upsertData.parceiro_id = parceiro_id
 
-    const { error: updateError } = await supabaseAdmin
+    const { error: upsertError } = await supabaseAdmin
       .from('crm_perfis')
-      .update(updates)
-      .eq('id', userId)
+      .upsert(upsertData, { onConflict: 'id' })
 
-    if (updateError) {
-      console.error('[criar-usuario] updateError:', updateError.message)
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
+    if (upsertError) {
+      console.error('[criar-usuario] upsertError:', upsertError.message)
+      return NextResponse.json({ error: upsertError.message }, { status: 500 })
     }
 
     return NextResponse.json({ ok: true, userId })
